@@ -16,6 +16,7 @@
 #    WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied. See the
 #    License for the specific language governing permissions and limitations
 #    under the License.
+from __future__ import absolute_import, unicode_literals
 
 """
 Base utilities to build API operation managers and objects on top of.
@@ -68,7 +69,7 @@ class BaseResource(object):
         corresponding attributes on the object.
         """
         for (key, val) in six.iteritems(info):
-            if isinstance(key, six.text_type):
+            if isinstance(key, six.text_type) and six.PY2:
                 key = key.encode(pyrax.get_encoding())
             elif isinstance(key, bytes):
                 key = key.decode("utf-8")

@@ -17,7 +17,7 @@
 
 
 # For doxygen class doc generation:
-"""
+r"""
 \mainpage Class Documentation for pyrax
 
 This module provides the Python Language Bindings for creating applications
@@ -25,10 +25,10 @@ built on the Rackspace / OpenStack Cloud.<br />
 
 The source code for <b>pyrax</b> can be found at:
 
-http://github.com/rackspace/pyrax
+http://github.com/pycontribs/pyrax
 """
 
-from __future__ import absolute_import
+from __future__ import absolute_import, unicode_literals
 from functools import wraps
 import inspect
 import logging
@@ -202,10 +202,8 @@ class Settings(object):
                     return _import_identity(ityp)
             else:
                 env_var = self.env_dct.get(key)
-            try:
-                ret = os.environ[env_var]
-            except KeyError:
-                ret = None
+            if env_var is not None:
+                ret = os.environ.get(env_var)
         return ret
 
 
@@ -768,7 +766,23 @@ def connect_to_cloud_databases(region=None):
 
 def connect_to_cloud_cdn(region=None):
     """Creates a client for working with cloud loadbalancers."""
-    return _create_client(ep_name="cdn", region=region)
+    global default_region
+    # (nicholaskuechler/keekz) 2017-11-30 - Not a very elegant solution...
+    # Cloud CDN only exists in 2 regions: DFW and LON
+    # But this isn't playing nicely with the identity service catalog results.
+    # US auth based regions (DFW, ORD, IAD, SYD, HKG) need to use CDN in DFW
+    # UK auth based regions (LON) need to use CDN in LON
+    if region in ['DFW', 'IAD', 'ORD', 'SYD', 'HKG']:
+        return _create_client(ep_name="cdn", region="DFW")
+    elif region in ['LON']:
+        return _create_client(ep_name="cdn", region="LON")
+    else:
+        if default_region in ['DFW', 'IAD', 'ORD', 'SYD', 'HKG']:
+            return _create_client(ep_name="cdn", region="DFW")
+        elif default_region in ['LON']:
+            return _create_client(ep_name="cdn", region="LON")
+        else:
+            return _create_client(ep_name="cdn", region=region)
 
 
 def connect_to_cloud_loadbalancers(region=None):

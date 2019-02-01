@@ -15,6 +15,7 @@
 #    WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied. See the
 #    License for the specific language governing permissions and limitations
 #    under the License.
+from __future__ import absolute_import, unicode_literals
 
 from functools import wraps
 import time
@@ -281,9 +282,7 @@ class CloudBlockStorageManager(BaseManager):
         """
         Used to create the dict required to create a new volume
         """
-        try:
-            int(size)
-        except:
+        if not isinstance(size, six.integer_types):
             raise exc.InvalidSize("Volume sizes must be integers")
 
         if volume_type is None:
